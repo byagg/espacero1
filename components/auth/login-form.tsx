@@ -1,120 +1,125 @@
 "use client"
 
 import type React from "react"
+
 import { useState } from "react"
+import { useAuth } from "@/hooks/use-auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useAuth } from "@/hooks/use-auth"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle, Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react"
+import { Loader2, Mail, Lock } from "lucide-react"
 
 interface LoginFormProps {
   onSuccess: () => void
 }
 
 export function LoginForm({ onSuccess }: LoginFormProps) {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  })
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const { signIn } = useAuth()
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+    // Clear error when user types
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }))
+    }
+  }
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {}
+
+    if (!formData.email.trim()) {
+      newErrors.email = "Email je povinný"
+    }
+
+    if (!formData.password) {
+      newErrors.password = "Heslo je povinné"
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
-    setIsLoading(true)
+
+    if (!validateForm()) {
+      return
+    }
+
+    setIsSubmitting(true)
 
     try {
-      const { data, error } = await signIn(email, password)
-      if (error) throw error
-      onSuccess()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Prihlásenie zlyhalo. Skúste to znova.")
+      const { error } = await signIn(formData.email, formData.password)
+
+      if (!error) {
+        onSuccess()
+        // Presmerovanie sa vykoná v useAuth hook-u
+      }
+    } catch (error) {
+      console.error("Chyba pri prihlásení:", error)
     } finally {
-      setIsLoading(false)
+      setIsSubmitting(false)
     }
   }
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Message */}
-      <div className="text-center">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">Prihláste sa do svojho účtu</h3>
-        <p className="text-gray-600 text-sm">Zadajte svoje prihlasovacie údaje</p>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <div className="relative">
+          <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            className={`pl-10 ${errors.email ? "border-red-500" : ""}`}
+            placeholder="vas@email.sk"
+          />
+        </div>
+        {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
       </div>
 
-      {error && (
-        <Alert variant="destructive" className="border-red-200 bg-red-50">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription className="text-red-700">{error}</AlertDescription>
-        </Alert>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-gray-700 font-medium">
-            Emailová adresa
-          </Label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-            <Input
-              id="email"
-              type="email"
-              placeholder="vas@email.sk"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="pl-10 border-gray-300 bg-white h-12"
-              required
-            />
-          </div>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="password">Heslo</Label>
+          <a href="#" className="text-xs text-amber-600 hover:text-amber-700">
+            Zabudnuté heslo?
+          </a>
         </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password" className="text-gray-700 font-medium">
-              Heslo
-            </Label>
-            <button type="button" className="text-sm text-amber-600 hover:text-amber-700 font-medium transition-colors">
-              Zabudnuté heslo?
-            </button>
-          </div>
-          <div className="relative">
-            <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-            <Input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="pl-10 pr-10 border-gray-300 bg-white h-12"
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-            </button>
-          </div>
+        <div className="relative">
+          <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            value={formData.password}
+            onChange={handleChange}
+            className={`pl-10 ${errors.password ? "border-red-500" : ""}`}
+            placeholder="Vaše heslo"
+          />
         </div>
+        {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
+      </div>
 
-        <Button
-          type="submit"
-          className="w-full bg-amber-500 text-white h-12 font-semibold border-amber-500"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Prihlasovanie...
-            </>
-          ) : (
-            "Prihlásiť sa"
-          )}
-        </Button>
-      </form>
-    </div>
+      <Button type="submit" className="w-full bg-amber-500 hover:bg-amber-600" disabled={isSubmitting}>
+        {isSubmitting ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Prihlasujem...
+          </>
+        ) : (
+          "Prihlásiť sa"
+        )}
+      </Button>
+    </form>
   )
 }

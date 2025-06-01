@@ -2,338 +2,376 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Menu, X, User, Heart, Calendar, LogOut, BarChart3, MapPin, Shield } from "lucide-react"
+import { AuthModal } from "@/components/auth/auth-modal"
 import { useAuth } from "@/hooks/use-auth"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { useRouter } from "next/navigation"
-import { AuthModal } from "@/components/auth/auth-modal"
+import { Menu, X, Search, Heart, Calendar, User, LogOut, Home, Settings, Shield } from "lucide-react"
 
 export function Navbar() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [showAuthModal, setShowAuthModal] = useState(false)
-  const { user, loading, signOut } = useAuth()
-  const router = useRouter()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+  const pathname = usePathname()
+  const { user, signOut, isAdmin, isHost } = useAuth()
+
+  // Fix hydration issues
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen)
+  }
+
+  const closeMenu = () => {
+    setIsMenuOpen(false)
+  }
 
   const handleSignOut = async () => {
     await signOut()
-    router.push("/")
   }
 
-  const getInitials = (name: string) => {
-    if (!name) return "U"
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .substring(0, 2) // Limit to 2 characters
+  const isActive = (path: string) => {
+    return pathname === path
   }
 
-  // Check if user is a host or admin
-  const isHost = user?.user_metadata?.user_role === "host" || user?.user_metadata?.user_role === "admin"
-  const isAdmin = user?.email === "info@simplimator.com" || user?.user_metadata?.user_role === "admin"
+  const navLinks = [
+    { name: "Domov", href: "/", icon: <Home className="h-5 w-5" /> },
+    { name: "Vyhľadávanie", href: "/search", icon: <Search className="h-5 w-5" /> },
+    { name: "FAQ", href: "/faq", icon: <Shield className="h-5 w-5" /> },
+    { name: "Kontakt", href: "/contact", icon: <Settings className="h-5 w-5" /> },
+  ]
 
-  // Redirect admin to admin dashboard after login
-  useEffect(() => {
-    if (user && isAdmin && !loading) {
-      // Only redirect if not already on admin page
-      if (!window.location.pathname.startsWith("/admin")) {
-        router.push("/admin/dashboard")
-      }
-    }
-  }, [user, isAdmin, loading, router])
+  // Only show these links if user is logged in
+  const authLinks = [
+    { name: "Obľúbené", href: "/favorites", icon: <Heart className="h-5 w-5" /> },
+    { name: "Rezervácie", href: "/bookings", icon: <Calendar className="h-5 w-5" /> },
+  ]
+
+  // Only show these links if user is a host
+  const hostLinks = [
+    { name: "Dashboard", href: "/host/dashboard", icon: <Home className="h-5 w-5" /> },
+    { name: "Moje priestory", href: "/host/venues", icon: <Search className="h-5 w-5" /> },
+    { name: "Rezervácie", href: "/host/bookings", icon: <Calendar className="h-5 w-5" /> },
+  ]
+
+  // Only show these links if user is an admin
+  const adminLinks = [{ name: "Admin Dashboard", href: "/admin/dashboard", icon: <Shield className="h-5 w-5" /> }]
 
   return (
-    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="text-2xl font-bold text-amber-600">
-            ESPACERO
-          </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {!isAdmin && (
-              <>
-                <Link href="/search" className="text-gray-700 hover:text-amber-600 transition-colors font-medium">
-                  Hľadať priestory
-                </Link>
-                <Link href="/venues/add" className="text-gray-700 hover:text-amber-600 transition-colors font-medium">
-                  Pridať priestor
-                </Link>
-                {isHost && (
-                  <Link
-                    href="/host/dashboard"
-                    className="text-gray-700 hover:text-amber-600 transition-colors font-medium"
-                  >
-                    Dashboard hostiteľa
-                  </Link>
-                )}
-              </>
-            )}
-            {isAdmin && (
-              <Link
-                href="/admin/dashboard"
-                className="text-gray-700 hover:text-amber-600 transition-colors font-medium"
-              >
-                Admin Dashboard
-              </Link>
-            )}
-          </div>
-
-          {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            {user ? (
-              <>
-                {!isAdmin && (
-                  <>
-                    <Link href="/favorites">
-                      <Button variant="ghost" className="text-gray-700 bg-white">
-                        <Heart className="h-4 w-4 mr-2" />
-                        Obľúbené
-                      </Button>
-                    </Link>
-                    <Link href="/bookings">
-                      <Button variant="ghost" className="text-gray-700 bg-white">
-                        <Calendar className="h-4 w-4 mr-2" />
-                        Rezervácie
-                      </Button>
-                    </Link>
-                  </>
-                )}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                      <Avatar className="h-8 w-8 bg-amber-500 text-white">
-                        <AvatarFallback>{getInitials(user.user_metadata?.full_name || "User")}</AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    className="w-56 bg-white border border-gray-200 shadow-lg"
-                    align="end"
-                    forceMount
-                  >
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">
-                          {user.user_metadata?.full_name || "Používateľ"}
-                        </p>
-                        <p className="text-xs leading-none text-gray-500">{user.email}</p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {!isAdmin && (
-                      <>
-                        <DropdownMenuItem asChild>
-                          <Link href="/profile">Profil</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href="/favorites">Obľúbené</Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href="/bookings">Rezervácie</Link>
-                        </DropdownMenuItem>
-                        {isHost && (
-                          <>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem asChild>
-                              <Link href="/host/dashboard">
-                                <BarChart3 className="mr-2 h-4 w-4" />
-                                Dashboard hostiteľa
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link href="/host/venues">
-                                <MapPin className="mr-2 h-4 w-4" />
-                                Moje priestory
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link href="/host/bookings">
-                                <Calendar className="mr-2 h-4 w-4" />
-                                Správa rezervácií
-                              </Link>
-                            </DropdownMenuItem>
-                          </>
-                        )}
-                      </>
-                    )}
-                    {isAdmin && (
-                      <>
-                        <DropdownMenuItem asChild>
-                          <Link href="/admin/dashboard">
-                            <Shield className="mr-2 h-4 w-4" />
-                            Admin Dashboard
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href="/profile">Profil</Link>
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Odhlásiť sa</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </>
-            ) : (
-              <Button className="bg-amber-500 text-white border-amber-500" onClick={() => setShowAuthModal(true)}>
-                Prihlásiť sa
-              </Button>
-            )}
-          </div>
-
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <Button variant="ghost" size="sm" onClick={() => setIsOpen(!isOpen)} className="text-gray-700">
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
-          </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        {isOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200 bg-white">
-            <div className="flex flex-col space-y-4">
-              {!isAdmin && (
-                <>
-                  <Link
-                    href="/search"
-                    className="text-gray-700 hover:text-amber-600 transition-colors font-medium px-4 py-2 rounded-md hover:bg-amber-50"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Hľadať priestory
-                  </Link>
-                  <Link
-                    href="/venues/add"
-                    className="text-gray-700 hover:text-amber-600 transition-colors font-medium px-4 py-2 rounded-md hover:bg-amber-50"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Pridať priestor
-                  </Link>
-                  {isHost && (
+    <>
+      {/* Desktop Navigation */}
+      <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+          <div className="flex items-center">
+            <Link href="/" className="flex items-center">
+              <span className="text-xl font-bold text-amber-500">ESPACERO</span>
+            </Link>
+            <nav className="ml-8 hidden md:block">
+              <ul className="flex space-x-8">
+                {navLinks.map((link) => (
+                  <li key={link.href}>
                     <Link
-                      href="/host/dashboard"
-                      className="text-gray-700 hover:text-amber-600 transition-colors font-medium px-4 py-2 rounded-md hover:bg-amber-50"
-                      onClick={() => setIsOpen(false)}
+                      href={link.href}
+                      className={`text-sm font-medium transition-colors ${
+                        isActive(link.href) ? "text-amber-500" : "text-gray-700 hover:text-amber-500"
+                      }`}
                     >
-                      Dashboard hostiteľa
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
+
+          <div className="flex items-center space-x-4">
+            {isMounted && user ? (
+              <>
+                <div className="hidden md:flex md:items-center md:space-x-4">
+                  {!isAdmin && (
+                    <Link href="/venues/add">
+                      <Button variant="outline" className="border-amber-500 text-amber-500">
+                        Pridať priestor
+                      </Button>
                     </Link>
                   )}
-                </>
-              )}
-              {isAdmin && (
-                <Link
-                  href="/admin/dashboard"
-                  className="text-gray-700 hover:text-amber-600 transition-colors font-medium px-4 py-2 rounded-md hover:bg-amber-50"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Admin Dashboard
-                </Link>
-              )}
-              <div className="pt-4 border-t border-gray-200 space-y-2 px-4">
-                {user ? (
-                  <>
-                    <div className="flex items-center space-x-3 mb-4">
-                      <Avatar className="h-10 w-10 bg-amber-500 text-white">
-                        <AvatarFallback>{getInitials(user.user_metadata?.full_name || "User")}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium text-gray-800">{user.user_metadata?.full_name || "Používateľ"}</p>
-                        <p className="text-xs text-gray-500">{user.email}</p>
-                      </div>
-                    </div>
-                    {!isAdmin && (
-                      <>
-                        <Link href="/favorites" onClick={() => setIsOpen(false)}>
-                          <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-amber-50">
-                            <Heart className="h-4 w-4 mr-2" />
-                            Obľúbené
-                          </Button>
-                        </Link>
-                        <Link href="/bookings" onClick={() => setIsOpen(false)}>
-                          <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-amber-50">
-                            <Calendar className="h-4 w-4 mr-2" />
-                            Rezervácie
-                          </Button>
-                        </Link>
-                      </>
-                    )}
-                    <Link href="/profile" onClick={() => setIsOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-amber-50">
-                        <User className="h-4 w-4 mr-2" />
-                        Profil
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="relative h-10 w-10 rounded-full bg-amber-100 p-0"
+                        aria-label="Používateľské menu"
+                      >
+                        <User className="h-5 w-5 text-amber-600" />
                       </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 bg-white border border-gray-200">
+                      <div className="px-4 py-3">
+                        <p className="text-sm font-medium text-gray-900">
+                          {user.user_metadata?.full_name || "Používateľ"}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      </div>
+                      <DropdownMenuSeparator />
+
+                      {/* User links */}
+                      <DropdownMenuItem asChild>
+                        <Link href="/profile" className="w-full cursor-pointer">
+                          Profil
+                        </Link>
+                      </DropdownMenuItem>
+
+                      {/* Show client links only for clients and admins */}
+                      {!isHost && (
+                        <>
+                          {authLinks.map((link) => (
+                            <DropdownMenuItem key={link.href} asChild>
+                              <Link href={link.href} className="w-full cursor-pointer">
+                                {link.name}
+                              </Link>
+                            </DropdownMenuItem>
+                          ))}
+                        </>
+                      )}
+
+                      {/* Host links */}
+                      {isHost && (
+                        <>
+                          <DropdownMenuSeparator />
+                          {hostLinks.map((link) => (
+                            <DropdownMenuItem key={link.href} asChild>
+                              <Link href={link.href} className="w-full cursor-pointer">
+                                {link.name}
+                              </Link>
+                            </DropdownMenuItem>
+                          ))}
+                        </>
+                      )}
+
+                      {/* Admin links */}
+                      {isAdmin && (
+                        <>
+                          <DropdownMenuSeparator />
+                          {adminLinks.map((link) => (
+                            <DropdownMenuItem key={link.href} asChild>
+                              <Link href={link.href} className="w-full cursor-pointer">
+                                {link.name}
+                              </Link>
+                            </DropdownMenuItem>
+                          ))}
+                        </>
+                      )}
+
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-red-600 cursor-pointer" onClick={handleSignOut}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Odhlásiť sa</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </>
+            ) : (
+              <div className="hidden md:block">
+                <Button onClick={() => setIsAuthModalOpen(true)} className="bg-amber-500 text-white">
+                  Prihlásiť sa
+                </Button>
+              </div>
+            )}
+
+            <button
+              onClick={toggleMenu}
+              className="inline-flex items-center justify-center rounded-md p-2 text-gray-700 md:hidden"
+              aria-expanded={isMenuOpen}
+            >
+              <span className="sr-only">Otvoriť hlavné menu</span>
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Navigation */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-30 bg-white md:hidden">
+          <div className="flex h-16 items-center justify-between px-4 border-b">
+            <Link href="/" className="flex items-center" onClick={closeMenu}>
+              <span className="text-xl font-bold text-amber-500">ESPACERO</span>
+            </Link>
+            <button
+              onClick={closeMenu}
+              className="inline-flex items-center justify-center rounded-md p-2 text-gray-700"
+            >
+              <span className="sr-only">Zavrieť menu</span>
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+          <nav className="mt-2 px-4">
+            <ul className="space-y-1">
+              {navLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className={`flex items-center rounded-md px-3 py-2 text-base font-medium ${
+                      isActive(link.href)
+                        ? "bg-amber-50 text-amber-500"
+                        : "text-gray-700 hover:bg-gray-50 hover:text-amber-500"
+                    }`}
+                    onClick={closeMenu}
+                  >
+                    <span className="mr-3">{link.icon}</span>
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+
+              {isMounted && user ? (
+                <>
+                  <li className="pt-4">
+                    <div className="px-3">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Používateľ</p>
+                    </div>
+                  </li>
+                  <li>
+                    <Link
+                      href="/profile"
+                      className="flex items-center rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-amber-500"
+                      onClick={closeMenu}
+                    >
+                      <User className="mr-3 h-5 w-5" />
+                      Profil
                     </Link>
-                    {isHost && !isAdmin && (
-                      <>
-                        <div className="border-t border-gray-200 pt-2 mt-2">
-                          <Link href="/host/dashboard" onClick={() => setIsOpen(false)}>
-                            <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-amber-50">
-                              <BarChart3 className="h-4 w-4 mr-2" />
-                              Dashboard hostiteľa
-                            </Button>
+                  </li>
+
+                  {/* Show client links only for clients and admins */}
+                  {!isHost && (
+                    <>
+                      {authLinks.map((link) => (
+                        <li key={link.href}>
+                          <Link
+                            href={link.href}
+                            className={`flex items-center rounded-md px-3 py-2 text-base font-medium ${
+                              isActive(link.href)
+                                ? "bg-amber-50 text-amber-500"
+                                : "text-gray-700 hover:bg-gray-50 hover:text-amber-500"
+                            }`}
+                            onClick={closeMenu}
+                          >
+                            <span className="mr-3">{link.icon}</span>
+                            {link.name}
                           </Link>
-                          <Link href="/host/venues" onClick={() => setIsOpen(false)}>
-                            <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-amber-50">
-                              <MapPin className="h-4 w-4 mr-2" />
-                              Moje priestory
-                            </Button>
-                          </Link>
-                          <Link href="/host/bookings" onClick={() => setIsOpen(false)}>
-                            <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-amber-50">
-                              <Calendar className="h-4 w-4 mr-2" />
-                              Správa rezervácií
-                            </Button>
-                          </Link>
+                        </li>
+                      ))}
+                    </>
+                  )}
+
+                  {isHost && (
+                    <>
+                      <li className="pt-4">
+                        <div className="px-3">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Hostiteľ</p>
                         </div>
-                      </>
-                    )}
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start text-red-600 hover:bg-red-50"
+                      </li>
+                      {hostLinks.map((link) => (
+                        <li key={link.href}>
+                          <Link
+                            href={link.href}
+                            className={`flex items-center rounded-md px-3 py-2 text-base font-medium ${
+                              isActive(link.href)
+                                ? "bg-amber-50 text-amber-500"
+                                : "text-gray-700 hover:bg-gray-50 hover:text-amber-500"
+                            }`}
+                            onClick={closeMenu}
+                          >
+                            <span className="mr-3">{link.icon}</span>
+                            {link.name}
+                          </Link>
+                        </li>
+                      ))}
+                      <li>
+                        <Link
+                          href="/venues/add"
+                          className="flex items-center rounded-md px-3 py-2 text-base font-medium text-amber-500 hover:bg-amber-50"
+                          onClick={closeMenu}
+                        >
+                          <span className="mr-3">
+                            <Home className="h-5 w-5" />
+                          </span>
+                          Pridať priestor
+                        </Link>
+                      </li>
+                    </>
+                  )}
+
+                  {isAdmin && (
+                    <>
+                      <li className="pt-4">
+                        <div className="px-3">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Admin</p>
+                        </div>
+                      </li>
+                      {adminLinks.map((link) => (
+                        <li key={link.href}>
+                          <Link
+                            href={link.href}
+                            className={`flex items-center rounded-md px-3 py-2 text-base font-medium ${
+                              isActive(link.href)
+                                ? "bg-amber-50 text-amber-500"
+                                : "text-gray-700 hover:bg-gray-50 hover:text-amber-500"
+                            }`}
+                            onClick={closeMenu}
+                          >
+                            <span className="mr-3">{link.icon}</span>
+                            {link.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </>
+                  )}
+
+                  <li className="pt-4">
+                    <button
                       onClick={() => {
                         handleSignOut()
-                        setIsOpen(false)
+                        closeMenu()
                       }}
+                      className="flex w-full items-center rounded-md px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50"
                     >
-                      <LogOut className="h-4 w-4 mr-2" />
+                      <LogOut className="mr-3 h-5 w-5" />
                       Odhlásiť sa
-                    </Button>
-                  </>
-                ) : (
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <li className="pt-4">
                   <Button
-                    className="w-full bg-amber-500 hover:bg-amber-600 text-white"
                     onClick={() => {
-                      setShowAuthModal(true)
-                      setIsOpen(false)
+                      setIsAuthModalOpen(true)
+                      closeMenu()
                     }}
+                    className="w-full bg-amber-500 text-white"
                   >
                     Prihlásiť sa
                   </Button>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+                </li>
+              )}
+            </ul>
+          </nav>
+        </div>
+      )}
 
       {/* Auth Modal */}
-      <AuthModal open={showAuthModal} onClose={() => setShowAuthModal(false)} />
-    </nav>
+      <AuthModal open={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+    </>
   )
 }
