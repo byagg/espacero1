@@ -10,9 +10,9 @@ import { Toaster } from "@/components/ui/toaster"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "ESPACERO - Prenájom gastro priestorov na Slovensku",
-  description: "AirBnB pre gastro priestory - prenájom reštaurácií, kaviarní a eventových sál pre súkromné účely",
-  generator: "v0.dev",
+  title: "ESPACERO - Rezervácia priestorov",
+  description: "Platforma pre rezerváciu priestorov na Slovensku",
+    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -24,9 +24,11 @@ export default function RootLayout({
     <html lang="sk">
       <body className={inter.className}>
         <AuthProvider>
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
+          <div className="min-h-screen flex flex-col">
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
           <Toaster />
         </AuthProvider>
       </body>

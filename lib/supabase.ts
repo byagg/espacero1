@@ -1,14 +1,10 @@
-"use client"
-
 import { createClient } from "@supabase/supabase-js"
 import type { Database } from "@/types/database"
 
-// Supabase configuration
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-// Create Supabase client if environment variables are available
-export const supabase = supabaseUrl && supabaseAnonKey ? createClient<Database>(supabaseUrl, supabaseAnonKey) : null
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
 
 // Admin client for server-side operations
 export const supabaseAdmin =
