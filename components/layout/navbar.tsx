@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Menu, X, Search, Heart, Calendar, User, LogOut, Home, Settings, Shield } from "lucide-react"
+import { Menu, X, Search, Heart, User, LogOut, Home, Shield } from "lucide-react"
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -42,25 +42,41 @@ export function Navbar() {
     return pathname === path
   }
 
+  const getLinkClassName = (href: string) => {
+    const baseClasses = "text-sm font-medium transition-colors"
+    if (isActive(href)) {
+      return `${baseClasses} text-amber-500`
+    }
+    return `${baseClasses} text-gray-700 hover:text-amber-500`
+  }
+
+  const getMobileLinkClassName = (href: string) => {
+    const baseClasses = "flex items-center rounded-md px-3 py-2 text-base font-medium"
+    if (isActive(href)) {
+      return `${baseClasses} bg-amber-50 text-amber-500`
+    }
+    return `${baseClasses} text-gray-700 hover:bg-gray-50 hover:text-amber-500`
+  }
+
   const navLinks = [
-    { name: "Domov", href: "/", icon: Home },
-    { name: "Vyhľadávanie", href: "/search", icon: Search },
-    { name: "FAQ", href: "/faq", icon: Shield },
-    { name: "Kontakt", href: "/contact", icon: Settings },
+    { name: "Domov", href: "/" },
+    { name: "Vyhľadávanie", href: "/search" },
+    { name: "FAQ", href: "/faq" },
+    { name: "Kontakt", href: "/contact" },
   ]
 
   const authLinks = [
-    { name: "Obľúbené", href: "/favorites", icon: Heart },
-    { name: "Rezervácie", href: "/bookings", icon: Calendar },
+    { name: "Obľúbené", href: "/favorites" },
+    { name: "Rezervácie", href: "/bookings" },
   ]
 
   const hostLinks = [
-    { name: "Dashboard", href: "/host/dashboard", icon: Home },
-    { name: "Moje priestory", href: "/host/venues", icon: Search },
-    { name: "Rezervácie", href: "/host/bookings", icon: Calendar },
+    { name: "Dashboard", href: "/host/dashboard" },
+    { name: "Moje priestory", href: "/host/venues" },
+    { name: "Rezervácie", href: "/host/bookings" },
   ]
 
-  const adminLinks = [{ name: "Admin Dashboard", href: "/admin/dashboard", icon: Shield }]
+  const adminLinks = [{ name: "Admin Dashboard", href: "/admin/dashboard" }]
 
   return (
     <>
@@ -74,14 +90,7 @@ export function Navbar() {
               <ul className="flex space-x-8">
                 {navLinks.map((link) => (
                   <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className={
-                        isActive(link.href)
-                          ? "text-amber-500 text-sm font-medium transition-colors"
-                          : "text-gray-700 hover:text-amber-500 text-sm font-medium transition-colors"
-                      }
-                    >
+                    <Link href={link.href} className={getLinkClassName(link.href)}>
                       {link.name}
                     </Link>
                   </li>
@@ -104,11 +113,7 @@ export function Navbar() {
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="relative h-10 w-10 rounded-full bg-amber-100 p-0"
-                        aria-label="Používateľské menu"
-                      >
+                      <Button variant="ghost" className="relative h-10 w-10 rounded-full bg-amber-100 p-0">
                         <User className="h-5 w-5 text-amber-600" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -127,17 +132,14 @@ export function Navbar() {
                         </Link>
                       </DropdownMenuItem>
 
-                      {!isHost && (
-                        <>
-                          {authLinks.map((link) => (
-                            <DropdownMenuItem key={link.href} asChild>
-                              <Link href={link.href} className="w-full cursor-pointer">
-                                {link.name}
-                              </Link>
-                            </DropdownMenuItem>
-                          ))}
-                        </>
-                      )}
+                      {!isHost &&
+                        authLinks.map((link) => (
+                          <DropdownMenuItem key={link.href} asChild>
+                            <Link href={link.href} className="w-full cursor-pointer">
+                              {link.name}
+                            </Link>
+                          </DropdownMenuItem>
+                        ))}
 
                       {isHost && (
                         <>
@@ -185,7 +187,6 @@ export function Navbar() {
             <button
               onClick={toggleMenu}
               className="inline-flex items-center justify-center rounded-md p-2 text-gray-700 md:hidden"
-              aria-expanded={isMenuOpen}
             >
               <span className="sr-only">Otvoriť hlavné menu</span>
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -210,25 +211,14 @@ export function Navbar() {
           </div>
           <nav className="mt-2 px-4">
             <ul className="space-y-1">
-              {navLinks.map((link) => {
-                const IconComponent = link.icon
-                return (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className={
-                        isActive(link.href)
-                          ? "bg-amber-50 text-amber-500 flex items-center rounded-md px-3 py-2 text-base font-medium"
-                          : "text-gray-700 hover:bg-gray-50 hover:text-amber-500 flex items-center rounded-md px-3 py-2 text-base font-medium"
-                      }
-                      onClick={closeMenu}
-                    >
-                      <IconComponent className="mr-3 h-5 w-5" />
-                      {link.name}
-                    </Link>
-                  </li>
-                )
-              })}
+              {navLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className={getMobileLinkClassName(link.href)} onClick={closeMenu}>
+                    <Home className="mr-3 h-5 w-5" />
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
 
               {isMounted && user ? (
                 <>
@@ -248,29 +238,15 @@ export function Navbar() {
                     </Link>
                   </li>
 
-                  {!isHost && (
-                    <>
-                      {authLinks.map((link) => {
-                        const IconComponent = link.icon
-                        return (
-                          <li key={link.href}>
-                            <Link
-                              href={link.href}
-                              className={
-                                isActive(link.href)
-                                  ? "bg-amber-50 text-amber-500 flex items-center rounded-md px-3 py-2 text-base font-medium"
-                                  : "text-gray-700 hover:bg-gray-50 hover:text-amber-500 flex items-center rounded-md px-3 py-2 text-base font-medium"
-                              }
-                              onClick={closeMenu}
-                            >
-                              <IconComponent className="mr-3 h-5 w-5" />
-                              {link.name}
-                            </Link>
-                          </li>
-                        )
-                      })}
-                    </>
-                  )}
+                  {!isHost &&
+                    authLinks.map((link) => (
+                      <li key={link.href}>
+                        <Link href={link.href} className={getMobileLinkClassName(link.href)} onClick={closeMenu}>
+                          <Heart className="mr-3 h-5 w-5" />
+                          {link.name}
+                        </Link>
+                      </li>
+                    ))}
 
                   {isHost && (
                     <>
@@ -279,25 +255,14 @@ export function Navbar() {
                           <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Hostiteľ</p>
                         </div>
                       </li>
-                      {hostLinks.map((link) => {
-                        const IconComponent = link.icon
-                        return (
-                          <li key={link.href}>
-                            <Link
-                              href={link.href}
-                              className={
-                                isActive(link.href)
-                                  ? "bg-amber-50 text-amber-500 flex items-center rounded-md px-3 py-2 text-base font-medium"
-                                  : "text-gray-700 hover:bg-gray-50 hover:text-amber-500 flex items-center rounded-md px-3 py-2 text-base font-medium"
-                              }
-                              onClick={closeMenu}
-                            >
-                              <IconComponent className="mr-3 h-5 w-5" />
-                              {link.name}
-                            </Link>
-                          </li>
-                        )
-                      })}
+                      {hostLinks.map((link) => (
+                        <li key={link.href}>
+                          <Link href={link.href} className={getMobileLinkClassName(link.href)} onClick={closeMenu}>
+                            <Search className="mr-3 h-5 w-5" />
+                            {link.name}
+                          </Link>
+                        </li>
+                      ))}
                       <li>
                         <Link
                           href="/venues/add"
@@ -318,25 +283,14 @@ export function Navbar() {
                           <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Admin</p>
                         </div>
                       </li>
-                      {adminLinks.map((link) => {
-                        const IconComponent = link.icon
-                        return (
-                          <li key={link.href}>
-                            <Link
-                              href={link.href}
-                              className={
-                                isActive(link.href)
-                                  ? "bg-amber-50 text-amber-500 flex items-center rounded-md px-3 py-2 text-base font-medium"
-                                  : "text-gray-700 hover:bg-gray-50 hover:text-amber-500 flex items-center rounded-md px-3 py-2 text-base font-medium"
-                              }
-                              onClick={closeMenu}
-                            >
-                              <IconComponent className="mr-3 h-5 w-5" />
-                              {link.name}
-                            </Link>
-                          </li>
-                        )
-                      })}
+                      {adminLinks.map((link) => (
+                        <li key={link.href}>
+                          <Link href={link.href} className={getMobileLinkClassName(link.href)} onClick={closeMenu}>
+                            <Shield className="mr-3 h-5 w-5" />
+                            {link.name}
+                          </Link>
+                        </li>
+                      ))}
                     </>
                   )}
 

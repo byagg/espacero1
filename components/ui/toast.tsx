@@ -28,18 +28,12 @@ const Toast = React.forwardRef<
     variant?: "default" | "destructive"
   }
 >(({ className, variant = "default", ...props }, ref) => {
-  return (
-    <ToastPrimitives.Root
-      ref={ref}
-      className={cn(
-        "group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-lg transition-all",
-        variant === "default" && "border-gray-200 bg-white text-gray-950",
-        variant === "destructive" && "border-red-500 bg-red-500 text-gray-50",
-        className,
-      )}
-      {...props}
-    />
-  )
+  const baseClasses =
+    "group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-lg transition-all"
+  const variantClasses =
+    variant === "destructive" ? "border-red-500 bg-red-500 text-gray-50" : "border-gray-200 bg-white text-gray-950"
+
+  return <ToastPrimitives.Root ref={ref} className={cn(baseClasses, variantClasses, className)} {...props} />
 })
 Toast.displayName = ToastPrimitives.Root.displayName
 

@@ -52,7 +52,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
     try {
       const { error } = await signUp(email, password, {
         full_name: fullName,
-        user_role: "client", // Default role is client
+        user_role: "client",
       })
 
       if (error) throw error
@@ -62,6 +62,10 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleCheckboxChange = (checked: boolean | string) => {
+    setAgreeToTerms(checked === true)
   }
 
   return (
@@ -140,12 +144,16 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
           {password && (
             <div className="mt-2 space-y-1">
-              {passwordRequirements.map((req, index) => (
-                <div key={index} className="flex items-center text-xs">
-                  <CheckCircle className={`h-3 w-3 mr-2 ${req.met ? "text-green-500" : "text-gray-300"}`} />
-                  <span className={req.met ? "text-green-600" : "text-gray-500"}>{req.text}</span>
-                </div>
-              ))}
+              {passwordRequirements.map((req, index) => {
+                const iconColor = req.met ? "text-green-500" : "text-gray-300"
+                const textColor = req.met ? "text-green-600" : "text-gray-500"
+                return (
+                  <div key={index} className="flex items-center text-xs">
+                    <CheckCircle className={`h-3 w-3 mr-2 ${iconColor}`} />
+                    <span className={textColor}>{req.text}</span>
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>
@@ -181,7 +189,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           <Checkbox
             id="terms"
             checked={agreeToTerms}
-            onCheckedChange={(checked) => setAgreeToTerms(checked === true)}
+            onCheckedChange={handleCheckboxChange}
             className="mt-1 border-gray-300"
           />
           <Label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed">
