@@ -1,15 +1,17 @@
 import type React from "react"
 import type { Metadata } from "next"
-import "./globals.css"
-import { AuthProvider } from "@/hooks/use-auth"
 import { Inter } from "next/font/google"
-import { Shell } from "@/components/Shell"
+import "./globals.css"
+import { Navbar } from "@/components/layout/navbar"
+import Footer from "@/components/layout/footer"
+import { AuthProvider } from "@/hooks/use-auth"
+import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
+  title: "ESPACERO - Prenájom gastro priestorov na Slovensku",
+  description: "AirBnB pre gastro priestory - prenájom reštaurácií, kaviarní a eventových sál pre súkromné účely",
   generator: "v0.dev",
 }
 
@@ -22,7 +24,10 @@ export default function RootLayout({
     <html lang="sk">
       <body className={inter.className}>
         <AuthProvider>
-          <Shell>{children}</Shell>
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
+          <Toaster />
         </AuthProvider>
       </body>
     </html>

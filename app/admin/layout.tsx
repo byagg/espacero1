@@ -2,14 +2,29 @@
 
 import type React from "react"
 
-import { useProtectedRoute } from "@/hooks/use-auth"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/use-auth"
 import { Loader2 } from "lucide-react"
+import { useEffect } from "react"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  // Ochrana stránky - len pre admin rolu
-  const { isAllowed } = useProtectedRoute(["admin"])
+  const { user, loading, isAdmin } = useAuth()
+  const router = useRouter()
 
-  if (!isAllowed) {
+  useEffect(() => {
+    // If user is loaded and not an admin, redirect to home
+    if (!loading && user && !isAdmin) {
+      router.push("/")
+    }
+
+    // If no user and not loading, redirect to home
+    if (!loading && !user) {
+      router.push("/")
+    }
+  }, [user, loading, isAdmin, router])
+
+  // Show loading state while checking authentication
+  if (loading || !user || !isAdmin) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
