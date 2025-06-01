@@ -6,10 +6,9 @@ import { createContext, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import type { User, Session } from "@supabase/supabase-js"
-import { toast } from "@/components/ui/use-toast"
 
 // Define user roles
-type UserRole = "client" | "host" | "admin"
+export type UserRole = "client" | "host" | "admin"
 
 // Define auth context type
 interface AuthContextType {
@@ -18,6 +17,7 @@ interface AuthContextType {
   loading: boolean
   isAdmin: boolean
   isHost: boolean
+  isClient: boolean
   signIn: (email: string, password: string) => Promise<{ data: any; error: any }>
   signUp: (email: string, password: string, metadata?: { [key: string]: any }) => Promise<{ data: any; error: any }>
   signOut: () => Promise<void>
@@ -42,6 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Check if user is host
   const isHost = userRole === "host"
+
+  // Check if user is client
+  const isClient = userRole === "client"
 
   // Initialize auth state
   useEffect(() => {
@@ -111,27 +114,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password,
       })
 
-      if (error) {
-        toast({
-          title: "Prihlásenie zlyhalo",
-          description: error.message,
-          variant: "destructive",
-        })
-        return { data: null, error }
-      }
-
-      toast({
-        title: "Prihlásenie úspešné",
-        description: "Vitajte späť!",
-      })
-
-      return { data, error: null }
+      return { data, error }
     } catch (error: any) {
-      toast({
-        title: "Prihlásenie zlyhalo",
-        description: error.message,
-        variant: "destructive",
-      })
       return { data: null, error }
     }
   }
@@ -152,48 +136,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       })
 
-      if (error) {
-        toast({
-          title: "Registrácia zlyhala",
-          description: error.message,
-          variant: "destructive",
-        })
-        return { data: null, error }
-      }
-
-      toast({
-        title: "Registrácia úspešná",
-        description: "Skontrolujte svoj email pre potvrdenie registrácie.",
-      })
-
-      return { data, error: null }
+      return { data, error }
     } catch (error: any) {
-      toast({
-        title: "Registrácia zlyhala",
-        description: error.message,
-        variant: "destructive",
-      })
       return { data: null, error }
     }
   }
 
   // Sign out function
   const signOut = async () => {
-    try {
-      await supabase.auth.signOut()
-      router.push("/")
-
-      toast({
-        title: "Odhlásenie úspešné",
-        description: "Boli ste úspešne odhlásení.",
-      })
-    } catch (error: any) {
-      toast({
-        title: "Odhlásenie zlyhalo",
-        description: error.message,
-        variant: "destructive",
-      })
-    }
+    await supabase.auth.signOut()
+    router.push("/")
   }
 
   // Auth context value
@@ -203,6 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     isAdmin,
     isHost,
+    isClient,
     signIn,
     signUp,
     signOut,

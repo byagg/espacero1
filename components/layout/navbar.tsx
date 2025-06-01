@@ -173,7 +173,7 @@ export function Navbar() {
                       )}
 
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-600 cursor-pointer" onClick={handleSignOut}>
+                      <DropdownMenuItem onClick={handleSignOut} className="text-red-600 cursor-pointer">
                         <LogOut className="mr-2 h-4 w-4" />
                         <span>Odhlásiť sa</span>
                       </DropdownMenuItem>

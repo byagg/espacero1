@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -49,7 +50,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
     setIsLoading(true)
 
     try {
-      const { data, error } = await signUp(email, password, {
+      const { error } = await signUp(email, password, {
         full_name: fullName,
         user_role: "client", // Default role is client
       })
@@ -65,7 +66,6 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Message */}
       <div className="text-center">
         <h3 className="text-lg font-semibold text-gray-800 mb-2">Vytvorte si nový účet</h3>
         <p className="text-gray-600 text-sm">Začnite rezervovať priestory už dnes</p>
@@ -138,7 +138,6 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             </button>
           </div>
 
-          {/* Password Requirements */}
           {password && (
             <div className="mt-2 space-y-1">
               {passwordRequirements.map((req, index) => (
@@ -182,8 +181,8 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           <Checkbox
             id="terms"
             checked={agreeToTerms}
-            onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
-            className="mt-1 border-gray-300 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+            onCheckedChange={(checked) => setAgreeToTerms(checked === true)}
+            className="mt-1 border-gray-300"
           />
           <Label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed">
             Súhlasím s{" "}

@@ -2,28 +2,21 @@
 
 import type React from "react"
 
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { Loader2 } from "lucide-react"
-import { useEffect } from "react"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, isAdmin } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    // If user is loaded and not an admin, redirect to home
-    if (!loading && user && !isAdmin) {
-      router.push("/")
-    }
-
-    // If no user and not loading, redirect to home
-    if (!loading && !user) {
+    if (!loading && (!user || !isAdmin)) {
       router.push("/")
     }
   }, [user, loading, isAdmin, router])
 
-  // Show loading state while checking authentication
   if (loading || !user || !isAdmin) {
     return (
       <div className="flex h-screen w-full items-center justify-center">

@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,7 +28,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     setIsLoading(true)
 
     try {
-      const { data, error } = await signIn(email, password)
+      const { error } = await signIn(email, password)
       if (error) throw error
       onSuccess()
     } catch (err) {
@@ -39,7 +40,6 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Message */}
       <div className="text-center">
         <h3 className="text-lg font-semibold text-gray-800 mb-2">Prihláste sa do svojho účtu</h3>
         <p className="text-gray-600 text-sm">Zadajte svoje prihlasovacie údaje</p>
