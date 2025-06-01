@@ -5,13 +5,12 @@ import "./globals.css"
 import { Navbar } from "@/components/layout/navbar"
 import Footer from "@/components/layout/footer"
 import { AuthProvider } from "@/hooks/use-auth"
-import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "ESPACERO - Rezervácia priestorov",
-  description: "Platforma pre rezerváciu priestorov na Slovensku",
+  title: "ESPACERO - Prenájom gastro priestorov na Slovensku",
+  description: "AirBnB pre gastro priestory - prenájom reštaurácií, kaviarní a eventových sál pre súkromné účely",
     generator: 'v0.dev'
 }
 
@@ -24,12 +23,9 @@ export default function RootLayout({
     <html lang="sk">
       <body className={inter.className}>
         <AuthProvider>
-          <div className="min-h-screen flex flex-col">
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
-          <Toaster />
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
         </AuthProvider>
       </body>
     </html>

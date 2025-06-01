@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -28,11 +27,18 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     setIsLoading(true)
 
     try {
-      const { error } = await signIn(email, password)
+      const { data, error } = await signIn(email, password)
       if (error) throw error
+
+      // Úspešné prihlásenie
       onSuccess()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Prihlásenie zlyhalo. Skúste to znova.")
+      console.error("Chyba pri prihlásení:", err)
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Prihlásenie zlyhalo. Skontrolujte svoje prihlasovacie údaje a skúste to znova.",
+      )
     } finally {
       setIsLoading(false)
     }
@@ -40,6 +46,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
   return (
     <div className="space-y-6">
+      {/* Welcome Message */}
       <div className="text-center">
         <h3 className="text-lg font-semibold text-gray-800 mb-2">Prihláste sa do svojho účtu</h3>
         <p className="text-gray-600 text-sm">Zadajte svoje prihlasovacie údaje</p>
@@ -115,6 +122,15 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           )}
         </Button>
       </form>
+
+      {/* Test accounts info */}
+      <div className="mt-6 border-t border-gray-200 pt-4">
+        <p className="text-sm text-gray-600 mb-2 font-medium">Testovacie účty:</p>
+        <div className="text-xs text-gray-500 space-y-1">
+          <p>Pre vytvorenie testovacieho účtu použite registráciu</p>
+          <p>Alebo sa prihláste s existujúcim účtom</p>
+        </div>
+      </div>
     </div>
   )
 }

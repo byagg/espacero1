@@ -2,14 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --primary: #f59e0b; /* Amber-500 */
-  --primary-dark: #d97706; /* Amber-600 */
-  --primary-light: #fbbf24; /* Amber-400 */
-  --secondary: #f59e0b; /* Amber-500 namiesto gray */
-  --background: #ffffff; /* Biele pozadie */
-  --text: #1f2937; /* Gray-800 */
-  --accent: #fef3c7; /* Amber-100 */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 45 93% 47%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 98%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 98%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 98%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 45 93% 47%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 45 93% 47%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 45 93% 47%;
+  }
 }
 
 @layer base {
@@ -17,133 +54,47 @@
     @apply border-border;
   }
   body {
-    @apply bg-white text-gray-800;
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+    @apply bg-background text-foreground;
   }
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
+/* Odstránenie všetkých Web3/MetaMask súvisiacich štýlov */
+/* Žiadne Web3 alebo MetaMask špecifické CSS */
+
+/* Základné štýly pre aplikáciu */
+.container {
+  @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
 }
 
-::-webkit-scrollbar-track {
-  @apply bg-gray-100;
+.card {
+  @apply bg-white border border-gray-200 rounded-lg shadow-sm;
 }
 
-::-webkit-scrollbar-thumb {
-  @apply bg-gray-400 rounded-full;
+.btn-primary {
+  @apply bg-amber-500 text-white border-amber-500;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-500;
+.btn-secondary {
+  @apply bg-gray-100 text-gray-800 border-gray-300;
 }
 
-/* Odstránenie smooth transitions a hover efektov */
-* {
-  /* Odstránené: transition: all 0.2s ease-in-out; */
-}
-
-/* Custom gradient backgrounds */
-.gradient-amber {
-  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-}
-
-.gradient-light {
-  background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%);
-}
-
-/* Improved text contrast */
-.text-high-contrast {
-  @apply text-gray-900;
-}
-
-.text-medium-contrast {
-  @apply text-gray-700;
-}
-
-.text-low-contrast {
-  @apply text-gray-600;
-}
-
-/* Jednoduché focus states bez animácií */
-button:focus,
-input:focus,
-select:focus,
-textarea:focus {
-  @apply ring-2 ring-amber-500 outline-none;
-  /* Odstránené: ring-offset-2 */
-}
-
-/* Odstránenie card hover efektov */
-.card-hover {
-  /* Odstránené: @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1; */
-  @apply shadow-md;
-}
-
-/* Logo styling */
-.logo-text {
-  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Mobile optimizations */
+/* Responzívne utility triedy */
 @media (max-width: 768px) {
-  h1 {
-    @apply text-3xl;
-  }
-
-  h2 {
-    @apply text-2xl;
-  }
-
-  .container {
-    @apply px-4;
-  }
-
-  /* Improved touch targets for mobile */
-  button,
-  a,
-  .clickable {
-    min-height: 44px;
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-  }
-
-  /* Better spacing for mobile forms */
-  input,
-  select,
-  textarea {
-    @apply mb-4;
-  }
-
-  /* Mobile-friendly cards */
-  .card-mobile {
-    @apply rounded-lg shadow-md p-4 bg-white;
-  }
-
-  /* Bottom navigation for mobile */
-  .mobile-nav-bottom {
-    @apply fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-2 px-4 z-50;
+  .mobile-hidden {
+    @apply hidden;
   }
 }
 
-/* Odstránenie hover efektov pre pozadia */
-.hover\:bg-amber-50:hover {
-  @apply bg-amber-50;
+/* Animácie bez Web3 závislostí */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.hover\:bg-red-50:hover {
-  @apply bg-red-50;
-}
-
-.hover\:bg-gray-50:hover {
-  @apply bg-gray-50;
-}
-
-/* Odstránenie priehľadných efektov */
-.hover\:bg-white\/20:hover {
-  @apply bg-gray-100;
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
 }
