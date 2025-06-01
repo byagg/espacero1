@@ -4,16 +4,20 @@ import type React from "react"
 
 import { createContext, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
-import type { User, Session } from "@supabase/supabase-js"
 
-// Define user roles
 export type UserRole = "client" | "host" | "admin"
 
-// Define auth context type
+interface User {
+  id: string
+  email: string
+  user_metadata?: {
+    full_name?: string
+    user_role?: UserRole
+  }
+}
+
 interface AuthContextType {
   user: User | null
-  session: Session | null
   loading: boolean
   isAdmin: boolean
   isHost: boolean
@@ -23,135 +27,121 @@ interface AuthContextType {
   signOut: () => Promise<void>
 }
 
-// Create auth context
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Auth provider component
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
-  const [userRole, setUserRole] = useState<UserRole | null>(null)
   const router = useRouter()
 
-  // Create Supabase client
-  const supabase = createClientComponentClient()
-
-  // Check if user is admin
+  const userRole = user?.user_metadata?.user_role || "client"
   const isAdmin = userRole === "admin"
-
-  // Check if user is host
   const isHost = userRole === "host"
-
-  // Check if user is client
   const isClient = userRole === "client"
 
-  // Initialize auth state
   useEffect(() => {
-    const initAuth = async () => {
+    // Check for stored user session
+    const storedUser = localStorage.getItem("espacero_user")
+    if (storedUser) {
       try {
-        // Get session from Supabase
-        const {
-          data: { session: currentSession },
-        } = await supabase.auth.getSession()
-
-        if (currentSession) {
-          setSession(currentSession)
-          setUser(currentSession.user)
-
-          // Get user role from metadata or database
-          const role = currentSession.user?.user_metadata?.user_role || "client"
-          setUserRole(role as UserRole)
-        }
+        const parsedUser = JSON.parse(storedUser)
+        setUser(parsedUser)
       } catch (error) {
-        console.error("Error initializing auth:", error)
-      } finally {
-        setLoading(false)
+        console.error("Error parsing stored user:", error)
+        localStorage.removeItem("espacero_user")
       }
     }
+    setLoading(false)
+  }, [])
 
-    initAuth()
-
-    // Set up auth state change listener
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      if (currentSession) {
-        setSession(currentSession)
-        setUser(currentSession.user)
-
-        // Get user role from metadata or database
-        const role = currentSession.user?.user_metadata?.user_role || "client"
-        setUserRole(role as UserRole)
-
-        // Redirect based on role
-        if (event === "SIGNED_IN") {
-          if (role === "admin") {
-            router.push("/admin/dashboard")
-          } else if (role === "host") {
-            router.push("/host/dashboard")
-          } else {
-            router.push("/venues")
-          }
-        }
-      } else {
-        setSession(null)
-        setUser(null)
-        setUserRole(null)
-      }
-    })
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [supabase, router])
-
-  // Sign in function
   const signIn = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+      setLoading(true)
 
-      return { data, error }
-    } catch (error: any) {
-      return { data: null, error }
-    }
-  }
+      let userData: User
 
-  // Sign up function
-  const signUp = async (email: string, password: string, metadata: { [key: string]: any } = {}) => {
-    try {
-      // Default role is client if not specified
-      if (!metadata.user_role) {
-        metadata.user_role = "client"
+      if (email === "admin@espacero.sk") {
+        userData = {
+          id: "admin-001",
+          email,
+          user_metadata: {
+            full_name: "Admin User",
+            user_role: "admin",
+          },
+        }
+      } else if (email === "host@espacero.sk") {
+        userData = {
+          id: "host-001",
+          email,
+          user_metadata: {
+            full_name: "Host User",
+            user_role: "host",
+          },
+        }
+      } else {
+        userData = {
+          id: "client-001",
+          email,
+          user_metadata: {
+            full_name: "Client User",
+            user_role: "client",
+          },
+        }
       }
 
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: metadata,
-        },
-      })
+      setUser(userData)
+      localStorage.setItem("espacero_user", JSON.stringify(userData))
 
-      return { data, error }
-    } catch (error: any) {
+      // Redirect based on role
+      const role = userData.user_metadata?.user_role
+      if (role === "admin") {
+        router.push("/admin/dashboard")
+      } else if (role === "host") {
+        router.push("/host/dashboard")
+      } else {
+        router.push("/venues")
+      }
+
+      return { data: { user: userData }, error: null }
+    } catch (error) {
       return { data: null, error }
+    } finally {
+      setLoading(false)
     }
   }
 
-  // Sign out function
+  const signUp = async (email: string, password: string, metadata: { [key: string]: any } = {}) => {
+    try {
+      setLoading(true)
+
+      const userData: User = {
+        id: Math.random().toString(36).substr(2, 9),
+        email,
+        user_metadata: {
+          full_name: metadata.full_name,
+          user_role: "client",
+        },
+      }
+
+      setUser(userData)
+      localStorage.setItem("espacero_user", JSON.stringify(userData))
+
+      return { data: { user: userData }, error: null }
+    } catch (error) {
+      return { data: null, error }
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const signOut = async () => {
-    await supabase.auth.signOut()
+    setUser(null)
+    localStorage.removeItem("espacero_user")
     router.push("/")
   }
 
-  // Auth context value
   const value = {
     user,
-    session,
     loading,
     isAdmin,
     isHost,
@@ -164,7 +154,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-// Hook to use auth context
 export function useAuth() {
   const context = useContext(AuthContext)
   if (context === undefined) {

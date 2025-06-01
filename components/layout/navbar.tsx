@@ -22,7 +22,6 @@ export function Navbar() {
   const pathname = usePathname()
   const { user, signOut, isAdmin, isHost } = useAuth()
 
-  // Fix hydration issues
   useEffect(() => {
     setIsMounted(true)
   }, [])
@@ -44,31 +43,27 @@ export function Navbar() {
   }
 
   const navLinks = [
-    { name: "Domov", href: "/", icon: <Home className="h-5 w-5" /> },
-    { name: "Vyhľadávanie", href: "/search", icon: <Search className="h-5 w-5" /> },
-    { name: "FAQ", href: "/faq", icon: <Shield className="h-5 w-5" /> },
-    { name: "Kontakt", href: "/contact", icon: <Settings className="h-5 w-5" /> },
+    { name: "Domov", href: "/", icon: Home },
+    { name: "Vyhľadávanie", href: "/search", icon: Search },
+    { name: "FAQ", href: "/faq", icon: Shield },
+    { name: "Kontakt", href: "/contact", icon: Settings },
   ]
 
-  // Only show these links if user is logged in
   const authLinks = [
-    { name: "Obľúbené", href: "/favorites", icon: <Heart className="h-5 w-5" /> },
-    { name: "Rezervácie", href: "/bookings", icon: <Calendar className="h-5 w-5" /> },
+    { name: "Obľúbené", href: "/favorites", icon: Heart },
+    { name: "Rezervácie", href: "/bookings", icon: Calendar },
   ]
 
-  // Only show these links if user is a host
   const hostLinks = [
-    { name: "Dashboard", href: "/host/dashboard", icon: <Home className="h-5 w-5" /> },
-    { name: "Moje priestory", href: "/host/venues", icon: <Search className="h-5 w-5" /> },
-    { name: "Rezervácie", href: "/host/bookings", icon: <Calendar className="h-5 w-5" /> },
+    { name: "Dashboard", href: "/host/dashboard", icon: Home },
+    { name: "Moje priestory", href: "/host/venues", icon: Search },
+    { name: "Rezervácie", href: "/host/bookings", icon: Calendar },
   ]
 
-  // Only show these links if user is an admin
-  const adminLinks = [{ name: "Admin Dashboard", href: "/admin/dashboard", icon: <Shield className="h-5 w-5" /> }]
+  const adminLinks = [{ name: "Admin Dashboard", href: "/admin/dashboard", icon: Shield }]
 
   return (
     <>
-      {/* Desktop Navigation */}
       <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center">
@@ -81,9 +76,11 @@ export function Navbar() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className={`text-sm font-medium transition-colors ${
-                        isActive(link.href) ? "text-amber-500" : "text-gray-700 hover:text-amber-500"
-                      }`}
+                      className={
+                        isActive(link.href)
+                          ? "text-amber-500 text-sm font-medium transition-colors"
+                          : "text-gray-700 hover:text-amber-500 text-sm font-medium transition-colors"
+                      }
                     >
                       {link.name}
                     </Link>
@@ -124,14 +121,12 @@ export function Navbar() {
                       </div>
                       <DropdownMenuSeparator />
 
-                      {/* User links */}
                       <DropdownMenuItem asChild>
                         <Link href="/profile" className="w-full cursor-pointer">
                           Profil
                         </Link>
                       </DropdownMenuItem>
 
-                      {/* Show client links only for clients and admins */}
                       {!isHost && (
                         <>
                           {authLinks.map((link) => (
@@ -144,7 +139,6 @@ export function Navbar() {
                         </>
                       )}
 
-                      {/* Host links */}
                       {isHost && (
                         <>
                           <DropdownMenuSeparator />
@@ -158,7 +152,6 @@ export function Navbar() {
                         </>
                       )}
 
-                      {/* Admin links */}
                       {isAdmin && (
                         <>
                           <DropdownMenuSeparator />
@@ -201,7 +194,6 @@ export function Navbar() {
         </div>
       </header>
 
-      {/* Mobile Navigation */}
       {isMenuOpen && (
         <div className="fixed inset-0 z-30 bg-white md:hidden">
           <div className="flex h-16 items-center justify-between px-4 border-b">
@@ -218,22 +210,25 @@ export function Navbar() {
           </div>
           <nav className="mt-2 px-4">
             <ul className="space-y-1">
-              {navLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className={`flex items-center rounded-md px-3 py-2 text-base font-medium ${
-                      isActive(link.href)
-                        ? "bg-amber-50 text-amber-500"
-                        : "text-gray-700 hover:bg-gray-50 hover:text-amber-500"
-                    }`}
-                    onClick={closeMenu}
-                  >
-                    <span className="mr-3">{link.icon}</span>
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
+              {navLinks.map((link) => {
+                const IconComponent = link.icon
+                return (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className={
+                        isActive(link.href)
+                          ? "bg-amber-50 text-amber-500 flex items-center rounded-md px-3 py-2 text-base font-medium"
+                          : "text-gray-700 hover:bg-gray-50 hover:text-amber-500 flex items-center rounded-md px-3 py-2 text-base font-medium"
+                      }
+                      onClick={closeMenu}
+                    >
+                      <IconComponent className="mr-3 h-5 w-5" />
+                      {link.name}
+                    </Link>
+                  </li>
+                )
+              })}
 
               {isMounted && user ? (
                 <>
@@ -253,25 +248,27 @@ export function Navbar() {
                     </Link>
                   </li>
 
-                  {/* Show client links only for clients and admins */}
                   {!isHost && (
                     <>
-                      {authLinks.map((link) => (
-                        <li key={link.href}>
-                          <Link
-                            href={link.href}
-                            className={`flex items-center rounded-md px-3 py-2 text-base font-medium ${
-                              isActive(link.href)
-                                ? "bg-amber-50 text-amber-500"
-                                : "text-gray-700 hover:bg-gray-50 hover:text-amber-500"
-                            }`}
-                            onClick={closeMenu}
-                          >
-                            <span className="mr-3">{link.icon}</span>
-                            {link.name}
-                          </Link>
-                        </li>
-                      ))}
+                      {authLinks.map((link) => {
+                        const IconComponent = link.icon
+                        return (
+                          <li key={link.href}>
+                            <Link
+                              href={link.href}
+                              className={
+                                isActive(link.href)
+                                  ? "bg-amber-50 text-amber-500 flex items-center rounded-md px-3 py-2 text-base font-medium"
+                                  : "text-gray-700 hover:bg-gray-50 hover:text-amber-500 flex items-center rounded-md px-3 py-2 text-base font-medium"
+                              }
+                              onClick={closeMenu}
+                            >
+                              <IconComponent className="mr-3 h-5 w-5" />
+                              {link.name}
+                            </Link>
+                          </li>
+                        )
+                      })}
                     </>
                   )}
 
@@ -282,31 +279,32 @@ export function Navbar() {
                           <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Hostiteľ</p>
                         </div>
                       </li>
-                      {hostLinks.map((link) => (
-                        <li key={link.href}>
-                          <Link
-                            href={link.href}
-                            className={`flex items-center rounded-md px-3 py-2 text-base font-medium ${
-                              isActive(link.href)
-                                ? "bg-amber-50 text-amber-500"
-                                : "text-gray-700 hover:bg-gray-50 hover:text-amber-500"
-                            }`}
-                            onClick={closeMenu}
-                          >
-                            <span className="mr-3">{link.icon}</span>
-                            {link.name}
-                          </Link>
-                        </li>
-                      ))}
+                      {hostLinks.map((link) => {
+                        const IconComponent = link.icon
+                        return (
+                          <li key={link.href}>
+                            <Link
+                              href={link.href}
+                              className={
+                                isActive(link.href)
+                                  ? "bg-amber-50 text-amber-500 flex items-center rounded-md px-3 py-2 text-base font-medium"
+                                  : "text-gray-700 hover:bg-gray-50 hover:text-amber-500 flex items-center rounded-md px-3 py-2 text-base font-medium"
+                              }
+                              onClick={closeMenu}
+                            >
+                              <IconComponent className="mr-3 h-5 w-5" />
+                              {link.name}
+                            </Link>
+                          </li>
+                        )
+                      })}
                       <li>
                         <Link
                           href="/venues/add"
                           className="flex items-center rounded-md px-3 py-2 text-base font-medium text-amber-500 hover:bg-amber-50"
                           onClick={closeMenu}
                         >
-                          <span className="mr-3">
-                            <Home className="h-5 w-5" />
-                          </span>
+                          <Home className="mr-3 h-5 w-5" />
                           Pridať priestor
                         </Link>
                       </li>
@@ -320,22 +318,25 @@ export function Navbar() {
                           <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Admin</p>
                         </div>
                       </li>
-                      {adminLinks.map((link) => (
-                        <li key={link.href}>
-                          <Link
-                            href={link.href}
-                            className={`flex items-center rounded-md px-3 py-2 text-base font-medium ${
-                              isActive(link.href)
-                                ? "bg-amber-50 text-amber-500"
-                                : "text-gray-700 hover:bg-gray-50 hover:text-amber-500"
-                            }`}
-                            onClick={closeMenu}
-                          >
-                            <span className="mr-3">{link.icon}</span>
-                            {link.name}
-                          </Link>
-                        </li>
-                      ))}
+                      {adminLinks.map((link) => {
+                        const IconComponent = link.icon
+                        return (
+                          <li key={link.href}>
+                            <Link
+                              href={link.href}
+                              className={
+                                isActive(link.href)
+                                  ? "bg-amber-50 text-amber-500 flex items-center rounded-md px-3 py-2 text-base font-medium"
+                                  : "text-gray-700 hover:bg-gray-50 hover:text-amber-500 flex items-center rounded-md px-3 py-2 text-base font-medium"
+                              }
+                              onClick={closeMenu}
+                            >
+                              <IconComponent className="mr-3 h-5 w-5" />
+                              {link.name}
+                            </Link>
+                          </li>
+                        )
+                      })}
                     </>
                   )}
 
@@ -370,7 +371,6 @@ export function Navbar() {
         </div>
       )}
 
-      {/* Auth Modal */}
       <AuthModal open={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </>
   )
